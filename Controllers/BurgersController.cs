@@ -11,7 +11,7 @@ namespace burgershack_c.Controllers
     [Route("api/[controller]")]
     public class BurgersController : Controller
     {
-        BurgerRepository db { get; set; }
+        private readonly BurgerRepository db;
         public BurgersController()
         {
             db = new BurgerRepository();

@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using burgershack_c.Models;
 using Dapper;
+using MySql.Data.MySqlClient;
 
 namespace burgershack_c.Repositories
 {
@@ -13,14 +14,16 @@ namespace burgershack_c.Repositories
 
         public BurgerRepository()
         {
-            _connectionString = @"Server=DESKTOP-P9K6TD5,49172;Database=burgershack;User Id=student;Password=student";
+            // _connectionString = "Server=DESKTOP-P9K6TD5:49172;Database=burgershack;User Id=student;Password=student;"; // WINDOWS SQL SERVER
+            _connectionString = "server=192.168.0.2;port=3306;database=burgershack;user id=student;password=student;"; // MAC MYSQL
         }
 
         public IDbConnection Connection
         {
             get
             {
-                return new SqlConnection(_connectionString);
+                // return new SqlConnection(_connectionString); // WINDOWS SQL SERVER
+                return new MySqlConnection(_connectionString); // MAC MYSQL
             }
         }
 
