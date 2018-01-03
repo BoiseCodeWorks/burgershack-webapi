@@ -43,7 +43,7 @@ namespace burgershack_c.Repositories
             using (IDbConnection dbConnection = Connection)
             {
                 dbConnection.Open();
-                return dbConnection.QueryFirstOrDefault<Burger>($"SELECT FROM Burgers WHERE id = {id}");
+                return dbConnection.QueryFirstOrDefault<Burger>($"SELECT * FROM Burgers WHERE id = {id}");
             }
         }
 
@@ -52,10 +52,8 @@ namespace burgershack_c.Repositories
             using (IDbConnection dbConnection = Connection)
             {
                 dbConnection.Open();
-                int id = dbConnection.Execute($@"
-                INSERT INTO Burgers (Name, Description, Price)
-                VALUES ({burger.Name}, {burger.Description}, {burger.Price});
-                SELECT CAST(SCOPE_IDENTITY() as int)", burger);
+                int id = dbConnection.Execute("INSERT INTO Burgers (Name, Description, Price)"
+                            + " VALUES(@Name, @Description, @Price) SELECT CAST(SCOPE_IDENTITY() as int)", burger);
                 burger.Id = id;
                 return burger;
             }
@@ -68,11 +66,11 @@ namespace burgershack_c.Repositories
                 dbConnection.Open();
                 return dbConnection.QueryFirstOrDefault<Burger>($@"
                 UPDATE Burgers SET  
-                    Name = {burger.Name},
-                    Description = {burger.Description},
-                    Price = {burger.Price}
-                WHERE Id = {id}
-                ");
+                    Name = @Name,
+                    Description = @Description,
+                    Price = @Price
+                WHERE Id = {id};
+                SELECT * FROM Burgers WHERE id = {id};", burger);
             }
         }
 
