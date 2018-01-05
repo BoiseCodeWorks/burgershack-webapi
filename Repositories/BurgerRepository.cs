@@ -10,69 +10,56 @@ namespace burgershack_c.Repositories
 {
     public class BurgerRepository
     {
-        private string _connectionString;
+        private readonly IDbConnection _db;
 
-        public BurgerRepository()
+        public BurgerRepository(IDbConnection db)
         {
-            // _connectionString = "Server=DESKTOP-P9K6TD5:49172;Database=burgershack;User Id=student;Password=student;"; // WINDOWS SQL SERVER
-            _connectionString = "server=192.168.0.2;port=3306;database=burgershack;user id=student;password=student;"; // MAC MYSQL
-        }
-
-        public IDbConnection Connection
-        {
-            get
-            {
-                // return new SqlConnection(_connectionString); // WINDOWS SQL SERVER
-                return new MySqlConnection(_connectionString); // MAC MYSQL
-            }
+            _db = db;
         }
 
         // Find One Find Many add update delete
-
         public IEnumerable<Burger> GetAll()
         {
-            using (IDbConnection dbConnection = Connection)
-            {
-                dbConnection.Open();
-                return dbConnection.Query<Burger>("SELECT * FROM Burgers");
-            }
+            return _db.Query<Burger>("SELECT * FROM Burgers");
         }
 
         public Burger GetById(int id)
         {
-            using (IDbConnection dbConnection = Connection)
-            {
-                dbConnection.Open();
-                return dbConnection.QueryFirstOrDefault<Burger>($"SELECT * FROM Burgers WHERE id = {id}");
-            }
+            return _db.QueryFirstOrDefault<Burger>($"SELECT * FROM Burgers WHERE id = @id", id);
         }
 
         public Burger Add(Burger burger)
         {
-            using (IDbConnection dbConnection = Connection)
-            {
-                dbConnection.Open();
-                int id = dbConnection.ExecuteScalar<int>("INSERT INTO Burgers (Name, Description, Price)"
-                            + " VALUES(@Name, @Description, @Price); SELECT LAST_INSERT_ID()", burger);
-                burger.Id = id;
-                return burger;
-            }
+
+            int id = _db.ExecuteScalar<int>("INSERT INTO Burgers (Name, Description, Price)"
+                        + " VALUES(@Name, @Description, @Price); SELECT LAST_INSERT_ID()", new
+                        {
+                            burger.Name,
+                            burger.Description,
+                            burger.Price
+                        });
+            burger.Id = id;
+            return burger;
+
         }
 
         public Burger GetOneByIdAndUpdate(int id, Burger burger)
         {
-            using (IDbConnection dbConnection = Connection)
-            {
-                dbConnection.Open();
-                return dbConnection.QueryFirstOrDefault<Burger>($@"
+            return _db.QueryFirstOrDefault<Burger>($@"
                 UPDATE Burgers SET  
                     Name = @Name,
                     Description = @Description,
                     Price = @Price
                 WHERE Id = {id};
                 SELECT * FROM Burgers WHERE id = {id};", burger);
-            }
         }
 
+        public string FindByIdAndRemove(int id)
+        {
+            var success = _db.Execute(@"
+                DELETE FROM Burgers WHERE Id = @id
+            ", id);
+            return success > 0 ? "success" : "umm that didnt work";
+        }
     }
 }

@@ -12,9 +12,9 @@ namespace burgershack_c.Controllers
     public class BurgersController : Controller
     {
         private readonly BurgerRepository db;
-        public BurgersController()
+        public BurgersController(BurgerRepository burgerRepo)
         {
-            db = new BurgerRepository();
+            db = burgerRepo;
         }
 
         // GET api/values
@@ -42,17 +42,18 @@ namespace burgershack_c.Controllers
         [HttpPut("{id}")]
         public Burger Put(int id, [FromBody]Burger burger)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-            return db.GetOneByIdAndUpdate(id, burger);
+                return db.GetOneByIdAndUpdate(id, burger);
             }
             return null;
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public string Delete(int id)
         {
+            return db.FindByIdAndRemove(id);
         }
     }
 }
